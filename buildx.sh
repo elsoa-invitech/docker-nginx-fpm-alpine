@@ -64,8 +64,8 @@ main() {
             BUILD_ARGS=""
             ;;
     esac
-    IMAGE="privatebin/${IMAGE}"
-    IMAGE_TAGS="--tag ${IMAGE}:latest --tag ${IMAGE}:${TAG} --tag ${IMAGE}:${TAG%%-*} --tag ghcr.io/${IMAGE}:latest --tag ghcr.io/${IMAGE}:${TAG} --tag ghcr.io/${IMAGE}:${TAG%%-*}"
+    IMAGE="elsoa-invitech/privatebin-${IMAGE}"
+    IMAGE_TAGS="--tag ghcr.io/${IMAGE}:latest --tag ghcr.io/${IMAGE}:${TAG} --tag ghcr.io/${IMAGE}:${TAG%%-*}"
 
     if [ "${EDGE}" = true ] ; then
         # build from alpine:edge instead of the stable release
@@ -73,19 +73,19 @@ main() {
         BUILD_ARGS+=" -f Dockerfile.edge"
 
         # replace the default tags, build just the edge one
-        IMAGE_TAGS="--tag ${IMAGE}:edge --tag ghcr.io/${IMAGE}:edge"
+        IMAGE_TAGS=" --tag ghcr.io/${IMAGE}:edge"
         IMAGE+=":edge"
     else
         if [ "${EVENT}" = push ] ; then
             # append the stable tag on explicit pushes to master or (git) tags
-            IMAGE_TAGS+=" --tag ${IMAGE}:stable --tag ghcr.io/${IMAGE}:stable"
+            IMAGE_TAGS+=" --tag ghcr.io/${IMAGE}:stable"
         fi
         # always build latest on non-edge builds
         IMAGE+=":latest"
     fi
     build_image "${BUILD_ARGS} ${IMAGE_TAGS}"
 
-    docker run -d --rm -p 127.0.0.1:8080:8080 --read-only --name smoketest "${IMAGE}"
+    docker run -d --rm -p 127.0.0.1:8080:8080 --read-only --name smoketest "ghcr.io/${IMAGE}"
     sleep 5 # give the services time to start up and the log to collect any errors that might occur
     test "$(docker inspect --format="{{.State.Running}}" smoketest)" = true
     curl --silent --show-error -o /dev/null http://127.0.0.1:8080/
