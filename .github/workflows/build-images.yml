@@ -15,8 +15,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        base-image: [stable, edge]
-        destination-image: [nginx-fpm-alpine, fs, gcs, pdo, s3]
+        base-image: [stable]
+        destination-image: [nginx-fpm-alpine, pdo]
     name: ${{ matrix.destination-image }} image / ${{ matrix.base-image }} release
     steps:
       - name: Checkout
